@@ -8,7 +8,7 @@ from cldm.model import create_model, load_state_dict
 
 
 # Configs
-resume_path = './models/control_sd15_ini.ckpt'
+resume_path = './models/map_control.ckpt'
 batch_size = 4
 logger_freq = 300
 learning_rate = 1e-5
@@ -22,7 +22,7 @@ model.load_state_dict(load_state_dict(resume_path, location='cpu'))
 model.learning_rate = learning_rate
 model.sd_locked = sd_locked
 model.only_mid_control = only_mid_control
-
+print(type(model))
 
 # Misc
 dataset = MyDataset()
@@ -32,4 +32,4 @@ trainer = pl.Trainer(gpus=1, precision=32, callbacks=[logger])
 
 
 # Train!
-trainer.fit(model, dataloader)
+# trainer.fit(model, dataloader)
