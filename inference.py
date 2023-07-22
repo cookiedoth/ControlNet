@@ -56,9 +56,6 @@ def run_sampler(
             seed = random.randint(0, 65535)
         seed_everything(seed)
 
-        if config.save_memory:
-            model.low_vram_shift(is_diffusing=False)
-
         cond = {
             "c_concat": [control],
             "c_crossattn": [
@@ -70,9 +67,6 @@ def run_sampler(
             "c_crossattn": [model.get_learned_conditioning([""] * num_samples)],
         }
         shape = (4, H // 8, W // 8)
-
-        if config.save_memory:
-            model.low_vram_shift(is_diffusing=True)
 
         model.control_scales = (
             [strength * (0.825 ** float(12 - i)) for i in range(13)]
@@ -90,9 +84,6 @@ def run_sampler(
             unconditional_conditioning=un_cond,
             show_progress=show_progress,
         )
-
-        if config.save_memory:
-            model.low_vram_shift(is_diffusing=False)
 
         x_samples = model.decode_first_stage(samples)
         x_samples = (

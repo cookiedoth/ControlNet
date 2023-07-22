@@ -9,11 +9,12 @@ from validation import validate_model
 
 # Configs
 resume_path = './models/map_control.ckpt'
-batch_size = 4
+batch_size = 2
 logger_freq = 300
 learning_rate = 1e-5
 sd_locked = True
 only_mid_control = False
+f = open('results', 'w')
 
 class Validate(pl.Callback):
     def __init__(self, every_n_step):
@@ -23,7 +24,8 @@ class Validate(pl.Callback):
         if trainer.global_step % self.every_n_step == 0 and trainer.global_step != 0:
             trainer.save_checkpoint(f'{trainer.global_step}.ckpt')
             metric_value = validate_model(pl_module)
-            print('metric', metric_value)
+            f.write(f'{trainer.global_step} {metric_value:.4}\n')
+            
 
 # First use cpu to load models. Pytorch Lightning will automatically move it to GPUs.
 model = create_model('./models/cldm_v15.yaml').cpu()
@@ -37,8 +39,8 @@ print(type(model))
 dataset = MyDataset()
 dataloader = DataLoader(dataset, num_workers=0, batch_size=batch_size, shuffle=True)
 logger = ImageLogger(batch_frequency=logger_freq)
-trainer = pl.Trainer(gpus=1, precision=32, callbacks=[logger, Validate(logger_freq)])
+trainer = pl.Trainer(gpus=1, precision=32, callbacks=[logger, Validate(1000)])
 
 
 # Train!
-# trainer.fit(model, dataloader)
+trainer.fit(model, dataloader)
