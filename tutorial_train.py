@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from tutorial_dataset import MyDataset
 from cldm.logger import ImageLogger
 from cldm.model import create_model, load_state_dict
-
+from validation import validate_model
 
 # Configs
 resume_path = './models/map_control.ckpt'
@@ -15,6 +15,15 @@ learning_rate = 1e-5
 sd_locked = True
 only_mid_control = False
 
+class Validate(pl.Callback):
+    def __init__(self, every_n_step):
+        self.every_n_step = every_n_step
+
+    def on_batch_end(self, trainer, pl_module):
+        if trainer.global_step % self.every_n_step == 0 and trainer.global_step != 0:
+            trainer.save_checkpoint(f'{trainer.global_step}.ckpt')
+            metric_value = validate_model(pl_module)
+            print('metric', metric_value)
 
 # First use cpu to load models. Pytorch Lightning will automatically move it to GPUs.
 model = create_model('./models/cldm_v15.yaml').cpu()
@@ -28,7 +37,7 @@ print(type(model))
 dataset = MyDataset()
 dataloader = DataLoader(dataset, num_workers=0, batch_size=batch_size, shuffle=True)
 logger = ImageLogger(batch_frequency=logger_freq)
-trainer = pl.Trainer(gpus=1, precision=32, callbacks=[logger])
+trainer = pl.Trainer(gpus=1, precision=32, callbacks=[logger, Validate(logger_freq)])
 
 
 # Train!

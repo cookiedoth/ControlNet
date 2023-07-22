@@ -1,0 +1,3 @@
+[submodule "maps-metric"]
+	path = maps-metric
+	url = git@github.com:cookiedoth/maps-metric.git
